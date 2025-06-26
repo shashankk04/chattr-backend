@@ -8,9 +8,13 @@ import contactsRoutes from './routes/ContactRoutes.js';
 import setupSocket from './socket.js';
 import messagesRoutes from './routes/MessagesRoutes.js';
 import channelRoutes from './routes/ChannelRoutes.js';
-
-
 dotenv.config();
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -21,6 +25,8 @@ app.use(cors({
     methods: ['GET','POST','PUT','DELETE','PATCH'],
     credentials: true //to enable cookies
 }));
+app.use(express.static(path.join(__dirname, "dist"))); // 👈 Add this
+// Handle all client-side routes (SPA fallback)
 
 app.use("/uploads/profiles",express.static("uploads/profiles"));
 app.use("/uploads/files",express.static("uploads/files"));
@@ -33,10 +39,17 @@ app.use("/api/contacts",contactsRoutes);
 app.use("/api/messages",messagesRoutes);
 app.use("/api/channel",channelRoutes);
 
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html")); // 👈 Add this
+});
+
 app.use((req, res) => {
   console.log("❌ Unmatched route", req.method, req.originalUrl);
   res.status(404).send("Not Found");
 });
+// Serve frontend static files (adjust "dist" or "build" based on your setup)
+
+
   
 
 const server = app.listen(port,()=>{
