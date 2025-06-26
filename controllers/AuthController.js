@@ -15,10 +15,11 @@ export const signup = async(request,response,next)=>{
             return response.status(400).json({message:"Email and password are required"});
         }
         const user = await User.create({email,password});
-        response.cookie("jwt",createToken(email,user.id),{
-            maxAge,
-            secure:true,
-            sameSite:"None"
+        response.cookie("jwt", createToken(email, user.id), {
+          maxAge,
+          httpOnly: true,
+          secure: true,
+          sameSite: "None",
         });
         return response.status(201).json({user:{
             id:user.id,
@@ -50,10 +51,11 @@ export const login = async(request,response,next)=>{
         if(!auth){
             return response.status(400).json({message:"Password is incorrect"});
         }
-        response.cookie("jwt",createToken(email,user.id),{
-            maxAge,
-            secure:true,
-            sameSite:"None"
+        response.cookie("jwt", createToken(email, user.id), {
+          maxAge,
+          httpOnly: true,
+          secure: true,
+          sameSite: "None",
         });
         return response.status(200).json({user:{
             id:user.id,
