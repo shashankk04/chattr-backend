@@ -1,5 +1,5 @@
 import Message from "../models/MessagesModel.js";
-import {mkdirSync, renameSync} from "fs";
+
 
 export const getMessages = async (request, response, next) => {
   try {
@@ -27,19 +27,17 @@ export const getMessages = async (request, response, next) => {
 };
 
 export const uploadFile = async (request, response, next) => {
-    try {
-        if(!request.file){
-            return response.status(400).send("File required");
-        }
-        const date = Date.now();
-        let fileDir = `uploads/files/${date}`;
-        let fileName = `${fileDir}/${request.file.originalname}`;
+  try {
+    if (!request.file) {
+      return response.status(400).send("File required");
+    }
 
-        mkdirSync(fileDir, { recursive: true });
-        renameSync(request.file.path, fileName);
+    const result = await cloudinary.uploader.upload(request.file.path, {
+      folder: "chat-app/files", // or any other folder name
+      resource_type: "auto", // supports images, videos, pdf, etc.
+    });
 
-
-    return response.status(200).json({ filePath:fileName });
+    return response.status(200).json({ filePath: result.secure_url });
   } catch (error) {
     console.log(error);
     return response.status(500).json({ message: "Internal server error" });
