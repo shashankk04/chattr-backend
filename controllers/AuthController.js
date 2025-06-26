@@ -125,46 +125,50 @@ export const updateProfile = async (request, response, next) => {
 
 export const addProfileImage = async (request, response, next) => {
   try {
-    if(!request.file){
-        return response.status(400).json({message:"Image is required"});
+    if (!request.file || !request.file.path) {
+      return response.status(400).json({ message: "Image is required" });
     }
-    const date = Date.now();
-    let fileName = "uploads/profiles/" +date + request.file.originalname;
-    renameSync(request.file.path,fileName);
-    const updatedUser = await User.findByIdAndUpdate(request.userId,
-        {image:fileName},
-        {new:true,runValidators:true}
+
+    // Cloudinary already returns a hosted URL in request.file.path
+    const imageUrl = request.file.path;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      request.userId,
+      { image: imageUrl },
+      { new: true, runValidators: true }
     );
+
     return response.status(200).json({
-        image:updatedUser.image,
+      image: updatedUser.image,
     });
-
-
-
   } catch (error) {
     console.log(error);
     return response.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
 export const removeProfileImage = async (request, response, next) => {
   try {
-    const {userId} = request;
+    const { userId } = request;
     const user = await User.findById(userId);
-    if(!user){
-        return response.status(400).json({message:"User not found"});
+    if (!user) {
+      return response.status(400).json({ message: "User not found" });
     }
-    if(user.image){
-        unlinkSync(user.image);
 
-    }
+    // Optional: you could call cloudinary.uploader.destroy(public_id) here if needed
+
     user.image = null;
     await user.save();
-    return response.status(200).json({message:"Image removed"});
+
+    return response.status(200).json({ message: "Image removed" });
   } catch (error) {
     console.log(error);
     return response.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 export const logout = async (request, response, next) => {
   try {
